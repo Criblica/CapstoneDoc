@@ -1,0 +1,127 @@
+\documentclass[12pt, a4paper, oneside]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+
+\usepackage{ucs}
+
+\usepackage{amsmath}
+
+\usepackage{amsfonts}
+
+\usepackage{amssymb}
+
+\usepackage{url}
+
+\usepackage[numbers]{natbib}
+
+\usepackage{setspace}
+
+\usepackage[british]{babel}
+
+\usepackage[nodayofweek]{datetime}
+
+\onehalfspacing
+
+%Set header and footer
+
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+
+\fancyhead{}
+
+\fancyfoot{}
+
+%\fancyhead[LE,LO]{\leftmark}
+
+\fancyhead[RE,RO]{\center{Einar Kristoffersen - einar.kristoffersen@uit.no}}
+
+\fancyfoot[C]{\thepage}
+
+\begin{document}
+\title{\bfseries {Concurrency in a distributed \\Gigapixel Image Viewer}}
+\author{Einar Kristoffersen \\
+einar.kristoffersen@uit.no\\
+University of Troms\o\\
+Troms\o, Norway}
+\date{}
+
+\maketitle
+
+
+
+
+
+%\input{./title.tex}
+\newpage
+\tableofcontents
+\newpage
+
+
+\section{Summary}
+As the current implementation of the Gigapixel image viewer at the Troms\o Displaywall is inefficient, hard to maintain and unstable, the need for a new design is growing. This technical report will describe the new concurrent and flexible design of the Gigapixel image viewer.
+
+\section{Introduction}
+\subsection{Motivation}
+What is the motivation for this project?
+\subsection{Description of problem}
+What is the problem I am solving?
+\subsection{Contents of this report}
+What will this report contain?
+\subsubsection{Requirements...?}
+What is the requirements?
+\section{Technical Background}
+Talk about the technicalities... Golang, concurrency vs parallelism,
+\subsection{The Go programming language}
+Go is an open source project developed by a team at Google as well as other contributors from the open source community. It was designed to address the problems faced in software development at Google and became a great tool for engineering large software projects.
+
+\subsubsection{Why use Go?}
+As mentioned, one of the goals of this Project is to create a implementation that is maintainable. The current implementation of the image viewer is written by using a combination of several languages and as a result, it is hard to maintain the code. 
+There was a discussion of which programming language would be best suited for the task. Both Python and Go was solid candidates in order to create a maintainable implementation, but the decision landed on the use of Go to perform this task.
+Unlike Python, (C and C++), the Go programming language is build for concurrency. 
+Go has the advantage of goroutines..
+
+\subsubsection{Concurrency build on CSP}
+Both concurrency and multi-threaded programming have a reputation for being difficult to use. Partly because of complex designs such as pthreads and partly too much focus on low-level details such as mutexes, condition variables and memory barriers. Higher level interfaces enables much simpler code and have been more successful in the past. One of the most successful models for providing high-level support for concurrency comes from CSP, by Tony Hoare. 
+Channels... 
+This is why the concurrency is build on the idea of CSP...
+
+\subsubsection{Goroutines instead of threads}
+Goroutines is a structure of behaviour that makes consistency easy to use in Go. The idea is to multiplex independently executing functions, coroutines, onto a set of threads. When a coroutine blocks, the run-time moves the other coroutines on the same os thread onto a different, runnable thread so they can keep running and not be blocked. The programmer sees none of this, which is exactly the point and makes it very easy to use the interface provided by this language. 
+The result, also called a goroutine, can be very cheap. There is little overhead other than the memory for the stack, which is just a few kilobytes.
+In order to make the stacks as small as possible, Go uses resizable bounded stacks. Goroutines are given a few kilobytes, which in most cases is enough, but when it isn’t  the runtime grows and shrinks the memory for storing stack automatically. This allows many goroutines to run in a small amount of memory. 
+Because of this, you can easy create houndreds of thousands of goroutines in the same address space. If a goroutine was just a thread, the system resources would run out at a much smaller number.
+
+\subsection{Concurrency}
+\subsubsection{Concurrency vs. Parallelism}
+When people hear the word concurrency they often have a tendency to think about the concept of parallelism, a related but quite different term. In programming, concurrency is the organization of independently executing processes, while parallelism is the simultaneous execution of (possibly related) computations. 
+When you run a program implemented by the use of concurrency, the executing processes is overlapping each other. This means that operations by different processes can work simultaneously, but they doesn't necessarily start at the same time. 
+Parallelism often refers to the technique of making programs fun faster by performing several computations in parallel, literally at the same time. This requires multiple computing units, while the concurrency often refers to techniques that makes a program more usable and requires at least one processing unit. 
+Concurrency can be parallelism, but not the other way around.
+Concurrency more powerful than parallelism.
+
+
+\section{Design}
+\subsection{Display Tool - Keyboard input}
+\subsection{Draw/Blit}
+\subsection{Data transfer and marshalling}
+\subsubsection{Program flow}
+Flow charts
+\section{Implementation???}
+\section{Tests/Evaluation}
+\section{Results}
+\section{Discussion}
+\subsubsection{Why SDL?}
+SDL, OpenGL, Azul3D...
+\section{Conclusion}
+As we can see from the results and evaluation of the implementation and design ...
+
+
+\newpage
+
+\bibliographystyle{plainnat}
+
+\bibliography{./lt}
+
+\end{document}
+

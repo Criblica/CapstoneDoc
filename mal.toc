@@ -1,0 +1,24 @@
+\select@language {british}
+\contentsline {section}{\numberline {0.1}Introduction}{2}
+\contentsline {subsection}{\numberline {0.1.1}Motivation}{2}
+\contentsline {subsection}{\numberline {0.1.2}Description of problem}{2}
+\contentsline {subsection}{\numberline {0.1.3}Contents of this report}{2}
+\contentsline {subsubsection}{Requirements...?}{2}
+\contentsline {section}{\numberline {0.2}Technical Background}{2}
+\contentsline {subsection}{\numberline {0.2.1}The Go programming language}{2}
+\contentsline {subsubsection}{Why use Go?}{2}
+\contentsline {subsubsection}{Concurrency build on CSP}{3}
+\contentsline {subsubsection}{Goroutines instead of threads}{3}
+\contentsline {subsection}{\numberline {0.2.2}Concurrency}{3}
+\contentsline {subsubsection}{Concurrency vs. Parallelism}{3}
+\contentsline {section}{\numberline {0.3}Design}{4}
+\contentsline {subsection}{\numberline {0.3.1}Display Tool - Keyboard input}{4}
+\contentsline {subsection}{\numberline {0.3.2}Draw/Blit}{4}
+\contentsline {subsection}{\numberline {0.3.3}Data transfer and marshalling}{4}
+\contentsline {subsubsection}{Program flow}{4}
+\contentsline {section}{\numberline {0.4}Implementation???}{4}
+\contentsline {section}{\numberline {0.5}Tests/Evaluation}{4}
+\contentsline {section}{\numberline {0.6}Results}{4}
+\contentsline {section}{\numberline {0.7}Discussion}{4}
+\contentsline {subsubsection}{Why SDL?}{4}
+\contentsline {section}{\numberline {0.8}Conclusion}{4}
