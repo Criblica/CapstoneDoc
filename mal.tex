@@ -49,21 +49,22 @@ Troms\o, Norway}
 \maketitle
 
 
-
-
-
 %\input{./title.tex}
 \newpage
 \tableofcontents
 \newpage
 
-
 \section{Summary}
 As the current implementation of the Gigapixel image viewer at the Troms\o Displaywall is inefficient, hard to maintain and unstable, the need for a new design is growing. This technical report will describe the new concurrent and flexible design of the Gigapixel image viewer.
+
+lessons learned.
 
 \section{Introduction}
 \subsection{Motivation}
 What is the motivation for this project?
+Maintaining the system
+more effective - concurrency
+
 \subsection{Description of problem}
 What is the problem I am solving?
 \subsection{Contents of this report}
@@ -91,6 +92,8 @@ Goroutines is a structure of behaviour that makes consistency easy to use in Go.
 The result, also called a goroutine, can be very cheap. There is little overhead other than the memory for the stack, which is just a few kilobytes.
 In order to make the stacks as small as possible, Go uses resizable bounded stacks. Goroutines are given a few kilobytes, which in most cases is enough, but when it isn’t  the runtime grows and shrinks the memory for storing stack automatically. This allows many goroutines to run in a small amount of memory. 
 Because of this, you can easy create houndreds of thousands of goroutines in the same address space. If a goroutine was just a thread, the system resources would run out at a much smaller number.
+\newline
+https://golang.org/doc/faq\#goroutines
 
 \subsection{Concurrency}
 \subsubsection{Concurrency vs. Parallelism}
@@ -99,20 +102,28 @@ When you run a program implemented by the use of concurrency, the executing proc
 Parallelism often refers to the technique of making programs fun faster by performing several computations in parallel, literally at the same time. This requires multiple computing units, while the concurrency often refers to techniques that makes a program more usable and requires at least one processing unit. 
 Concurrency can be parallelism, but not the other way around.
 Concurrency more powerful than parallelism.
-
+\newline
+https://blog.golang.org/concurrency-is-not-parallelism
 
 \section{Design}
+The image viewer is designed with a master-slave solution, where the master is either the frontend node or a laptop and the slaves is the 28 tiles in the cluster. An image is 
 \subsection{Display Tool - Keyboard input}
 \subsection{Draw/Blit}
-\subsection{Data transfer and marshalling}
+calculate start position, bounds – only draw images with a position inside the tile's bounds
+\subsection{Data transfer}
+marshal, unmarshal, send, receive
 \subsubsection{Program flow}
-Flow charts
-\subsubsection{Data Flow}
+how it works  - shortly
+\subsubsection{Data flow}
+about the rates\newline
 Whatever kind of input method is chosen, the received input will change the position variables kept at the master. Only when at least one of these variables are changed, they all will be marshalled/packed into a state. Every time a new state is paced it will be inserted into a buffer/queue (FIFO)  where it will be sent out as a multicast to the slaves periodically.
 \newline
 \newline
-We do this because we want the movement of the image to be as accurate as possible according to time with a minimal latency. 
-We can afford to loose some states in this solution, compared to a solution where you send all states, obtain a huge latency over time and cannot afford loosing any states.
+Channel as buffer:
+Receivers always block until there is data to receive. If the channel is unbuffered, the sender blocks until the receiver has received the value. If the channel has a buffer, the sender blocks only until the value has been copied to the buffer; if the buffer is full, this means waiting until some receiver has retrieved a value.
+
+when a channel is full, the sender waits for another goroutine to make some room by receiving
+you can see an unbuffered channel as an always full one : there must be another groutine to take what the sender sends.
 \newline
 \newline
 Variables:
@@ -121,11 +132,8 @@ sendrate – how often should we let it send, FPS...
 empty the whole queue or just a bit?
 \newline
 \newline
-Channel as buffer:
-Receivers always block until there is data to receive. If the channel is unbuffered, the sender blocks until the receiver has received the value. If the channel has a buffer, the sender blocks only until the value has been copied to the buffer; if the buffer is full, this means waiting until some receiver has retrieved a value.
-
-when a channel is full, the sender waits for another goroutine to make some room by receiving
-you can see an unbuffered channel as an always full one : there must be another groutine to take what the sender sends.
+We do this because we want the movement of the image to be as accurate as possible according to time with a minimal latency. 
+We can afford to loose some states in this solution, compared to a solution where you send all states, obtain a huge latency over time and cannot afford loosing any states.
 
 \paragraph{Input rate}
 The input rate is at its peak when the the variables is constantly changed. This happens when the image is moving around on the screen and not by simply changing the zoomlevel. However, by how much the variables is increased or decreased during one loop count doesn't change the input rate in any way. 
@@ -134,14 +142,37 @@ The amount of times the position variables is changed by the user input during o
 Depending on the vcr is high or low, it might create a bottleneck in for of a queue before a state is multicasted to the slaves. As the master will send the current state of the position variables periodically, it will have a certain send rate. If the send rate is lower than the vcr, the send queue will be filled up and a latency will occur. As the queue grows longer, the time from receiving user input at the master to the corresponding state is sent from the master is growing larger. 
 Not dealing with this problem will result in a growing latency and (show graph) from tests... 
 To deal with this problem we introduce a empty policy saying that if the a state is tried to be inserted into a full buffer or the buffer grows too large, we empty the whole buffer.
-\paragraph{Send rate}
-\paragraph{Blit rate}
-\subsubsection{Network Flow}
+\paragraph{Send Rate-muticast}
+
+\paragraph{blit rate}
+Flow charts
+
+\subsubsection{Network flow}
+A big design choice is to choose which way to send data out to the slaves. Several ways was considered when making this choice. 
 
 \paragraph{Sequential solution}
-The sequential solution 
+not even an alternative to even think about a "clean" sequential solution where each slave only sends to one other slave.
+each slave forwards the blit request. Depending on what algorithm is used, the best worstcase is 5 jumps after master has sent his request to a start/center slave 
+
+The sequential solution is based on the master sending only one request to a chosen slave. Depending on how this solution is implemented, the slave forwards this request to some or all of its neighbours in vertical, horizontal or both directions. By introducing a rule about not blitting or forwarding a state that equals the last received state, a slave receiving two or more of the same request will not contribute to spamming the other slaves with the same request over and over again. To make this solution most effective the master should choose the tile that is closest to the center due to the configuration.
+
+The forwarding of requests results in a queue of slaves where the first slave is the one receiving from master and the last one is the one furthest from the center. The slaves between the head and tail of the queue is a collection of the slaves forming the shortest route between these two. 
+This approach is said to be sequential because the last slave in the queue must wait until all the salves before it has received and forwarded the request, one by one, to the next slave in the queue.
+
+Unfortunately this approach comes with a few problems. Even if the different queues send their requests concurrently after the head has received it from the master, each slave must wait for the request until the slave above has forwarded it. With a display configuration of 7 tiles in width and 4 tiles in height (maximum amount of tiles), the amount of sends will be 5 after the head received the request from the master. This causes a big latency from master sends the request to the last slave receives is. 
+
+Another problem is because of the latency this approach causes, the spamming rule we introduced will only work to a certain degree. If a slave S receives requests from more than one neighbour, let's say A and B, then this can be the case:
+S receives the request r1A, followed by r2A and then r1B.
+
+What happens is that the delay causes S to receive two different requests from A before the first request is received by B. Since the last request received before r1B was r2A, S will both blit and forward this request twice. 
+
+Because of the concurrency
 
 \paragraph{Multicast solution}
+Master send multicast to all slaves.
+
+
+
 \section{Implementation???}
 \section{Tests/Evaluation}
 \section{Results}
