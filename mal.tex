@@ -54,6 +54,15 @@ Troms\o, Norway}
 \tableofcontents
 \newpage
 
+
+\section{Preface}
+This should be before contents...
+Thank following people:
+John Marcus Bj\orndalen - advisor, 
+bj\orn - technical staff,
+...
+
+
 \section{Summary}
 As the current implementation of the Gigapixel image viewer at the Troms\o Displaywall is inefficient, hard to maintain and unstable, the need for a new design is growing. This technical report will describe the new concurrent and flexible design of the Gigapixel image viewer.
 
@@ -105,6 +114,10 @@ Concurrency more powerful than parallelism.
 \newline
 https://blog.golang.org/concurrency-is-not-parallelism
 
+\section{Theoretical framework}
+\section{Methods}
+\section{Requirements specification}
+
 \section{Design}
 The image viewer is designed with a master-slave solution, where the master is either the frontend node or a laptop and the slaves is the 28 tiles in the cluster. An image is 
 \subsection{Display Tool - Keyboard input}
@@ -136,14 +149,14 @@ We do this because we want the movement of the image to be as accurate as possib
 We can afford to loose some states in this solution, compared to a solution where you send all states, obtain a huge latency over time and cannot afford loosing any states.
 
 \paragraph{Input rate}
-The input rate is at its peak when the the variables is constantly changed. This happens when the image is moving around on the screen and not by simply changing the zoomlevel. However, by how much the variables is increased or decreased during one loop count doesn't change the input rate in any way. 
+The input rate is the amount of received user input during one second. This is at its peak when the image is constantly moving.
 \paragraph{Variable change rate}
-The amount of times the position variables is changed by the user input during one second will from now on be referred to as the “vcr” (variable change rate).
-Depending on the vcr is high or low, it might create a bottleneck in for of a queue before a state is multicasted to the slaves. As the master will send the current state of the position variables periodically, it will have a certain send rate. If the send rate is lower than the vcr, the send queue will be filled up and a latency will occur. As the queue grows longer, the time from receiving user input at the master to the corresponding state is sent from the master is growing larger. 
+The amount of times the position variables (x, y and z) is changed by the user input during one second will from now on be referred to as the “vcr” (variable change rate).
+Depending on the vcr is high or low, it might create a bottleneck in form of a queue before a state is multicasted to the slaves. 
+\paragraph{Send Rate-muticast}
+The send rate is the amount of multicasts the master can complete per second. As the master will send the current state of the position variables periodically, it will have a certain send rate. If the send rate is lower than the vcr, the send queue will be filled up and a latency will occur. As the queue grows larger, the time from receiving user input at the master to the corresponding state is sent from the master also increases. 
 Not dealing with this problem will result in a growing latency and (show graph) from tests... 
 To deal with this problem we introduce a empty policy saying that if the a state is tried to be inserted into a full buffer or the buffer grows too large, we empty the whole buffer.
-\paragraph{Send Rate-muticast}
-
 \paragraph{blit rate}
 Flow charts
 
@@ -151,37 +164,37 @@ Flow charts
 A big design choice is to choose which way to send data out to the slaves. Several ways was considered when making this choice. 
 
 \paragraph{Sequential solution}
-not even an alternative to even think about a "clean" sequential solution where each slave only sends to one other slave.
-each slave forwards the blit request. Depending on what algorithm is used, the best worstcase is 5 jumps after master has sent his request to a start/center slave 
-
 The sequential solution is based on the master sending only one request to a chosen slave. Depending on how this solution is implemented, the slave forwards this request to some or all of its neighbours in vertical, horizontal or both directions. By introducing a rule about not blitting or forwarding a state that equals the last received state, a slave receiving two or more of the same request will not contribute to spamming the other slaves with the same request over and over again. To make this solution most effective the master should choose the tile that is closest to the center due to the configuration.
 
 The forwarding of requests results in a queue of slaves where the first slave is the one receiving from master and the last one is the one furthest from the center. The slaves between the head and tail of the queue is a collection of the slaves forming the shortest route between these two. 
 This approach is said to be sequential because the last slave in the queue must wait until all the salves before it has received and forwarded the request, one by one, to the next slave in the queue.
 
-Unfortunately this approach comes with a few problems. Even if the different queues send their requests concurrently after the head has received it from the master, each slave must wait for the request until the slave above has forwarded it. With a display configuration of 7 tiles in width and 4 tiles in height (maximum amount of tiles), the amount of sends will be 5 after the head received the request from the master. This causes a big latency from master sends the request to the last slave receives is. 
+Unfortunately this approach comes with a few problems. Even if the different queues send their requests concurrently after the head has received it from the master, each slave must wait for the request until the slave above has forwarded it. With a display configuration of 7 tiles in width and 4 tiles in height (maximum amount of tiles), the amount of sends will be 4 after the head received the request from the master. This causes a big latency from master sends the request to the last slave receives is. 
 
 Another problem is because of the latency this approach causes, the spamming rule we introduced will only work to a certain degree. If a slave S receives requests from more than one neighbour, let's say A and B, then this can be the case:
 S receives the request r1A, followed by r2A and then r1B.
 
 What happens is that the delay causes S to receive two different requests from A before the first request is received by B. Since the last request received before r1B was r2A, S will both blit and forward this request twice. 
 
-Because of the concurrency
+Because of the concurrency, this is not a "clean" sequential solution. That would be to let the master send one request to one slave and let each slave forward only one request further. This in not even considered as an alternative since the last slave in the queue has to wait for all other slaves in the configuration to forward the request. Forwarding the request as much as 27 times would create a even greater delay before the last slave receives the request.
 
 \paragraph{Multicast solution}
-Master send multicast to all slaves.
+The multicast solution is quite simpler. The master sends the same request to all slaves by looping over the ip addresses and starting goroutines that send the request to each of them. This is technically not a multicast since the sending of requests is done concurrently, but it is a multicast like solution.
 
+This will still result in a little delay from when each of the slaves receives the request, but this delay is so little that other factors will have greater impact on the total delay from a request is sent to a request is blitted on the screen. E.g. network traffic at each of the slaves or latency from fetching an image.
 
-
-\section{Implementation???}
+\section{Implementation}
 \section{Tests/Evaluation}
 \section{Results}
 \section{Discussion}
 \subsubsection{Why SDL?}
 SDL, OpenGL, Azul3D...
-\section{Conclusion}
-As we can see from the results and evaluation of the implementation and design ...
+\subsection{Further works}
+in the future...
 
+\section{Conclusion}
+As we can see from the results and evaluation of the implemented design ...
+lessons learned...
 
 \newpage
 
