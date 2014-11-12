@@ -48,7 +48,6 @@ Troms\o, Norway}
 
 \maketitle
 
-
 %\input{./title.tex}
 \newpage
 \tableofcontents
@@ -73,13 +72,23 @@ lessons learned.
 What is the motivation for this project?
 Maintaining the system
 more effective - concurrency
+As the current implementation of the Gigapixel image viewer at the Tromsø Displaywall is inefficient, hard to maintain and unstable. Because of this, the need for a new design is growing.  
 
 \subsection{Description of problem}
 What is the problem I am solving?
-\subsection{Contents of this report}
-What will this report contain?
-\subsubsection{Requirements...?}
+bottleneck
+unstable
+more efficient - concurrent
+maintainable
+configuration - display-cloud
+
+\subsection{Requirements...?}
 What is the requirements?
+
+\subsection{Outline}
+What will this report contain?
+In section blabla
+
 
 
 \section{Technical Background - Theoretical framework}
@@ -162,7 +171,7 @@ To deal with this problem we introduce a empty policy saying that if the a state
 Flow charts
 
 \subsubsection{Network flow}
-A big design choice is to choose which way to send data out to the slaves. Several ways was considered when making this choice. 
+A big design choice is to choose which method to use when sending data to the slaves. Several methods was considered when making this choice. 
 
 \paragraph{Sequential solution}
 The sequential solution is based on the master sending only one request to a chosen slave. Depending on how this solution is implemented, the slave forwards this request to some or all of its neighbours in vertical, horizontal or both directions. By introducing a rule about not blitting or forwarding a state that equals the last received state, a slave receiving two or more of the same request will not contribute to spamming the other slaves with the same request over and over again. To make this solution most effective the master should choose the tile that is closest to the center due to the configuration.
@@ -183,6 +192,12 @@ Because of the concurrency, this is not a "clean" sequential solution. That woul
 The multicast solution is quite simpler. The master sends the same request to all slaves by looping over the ip addresses and starting goroutines that send the request to each of them. This is technically not a multicast since the sending of requests is done concurrently, but it is a multicast like solution.
 
 This will still result in a little delay from when each of the slaves receives the request, but this delay is so little that other factors will have greater impact on the total delay from a request is sent to a request is blitted on the screen. E.g. network traffic at each of the slaves or latency from fetching an image.
+\newline
+\newline
+By comparing the methods mentioned, considering how the latency is scaling when adding more tiles to the configuration the choice of method to use for data transfer over the network was the multicast solution. 
+
+\subsubsection{Memory-cache}
+current solution - load all images into ram. what about cache?
 
 \section{Implementation}
 \section{Tests/Evaluation}
