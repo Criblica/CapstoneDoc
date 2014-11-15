@@ -177,8 +177,10 @@ The master's main tasks is to:
 \item multicast new states periodically to the slaves in the configuration
 \end{enumerate}
 
-In the current design, the master launches one goroutinea - a SDL window where the user enters keyboard input and another goroutine multicasting new goroutines to the slaves. These goroutines use a unbuffered channel and one way communication to transfer packed states from the goroutine receiving user input to the goroutine multicasting the states. 
+In the current design, the master launches one goroutine - a SDL window where the user enters keyboard input and another goroutine multicasting new states to the slaves. These goroutines use a unbuffered channel and one way communication to transfer packed states from the goroutine receiving user input to the goroutine multicasting the states. 
+When a new state is fetched from the channel a multicast operation will occur periodically. N times per second will the state be sent by a multicast-like operation. 
 
+receive input -> as result, change variables -> insert to buffer -> (fetch from buffer and start multicast) periodically
 
 Where is the concurrency??
 
