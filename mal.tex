@@ -177,12 +177,12 @@ The master's main tasks is to:
 \item multicast new states periodically to the slaves in the configuration
 \end{enumerate}
 
-In the current design, the master launches one goroutinea - a SDL window where the user enters keyboard input and another goroutine multicasting new goroutines to the slaves. These goroutines use a channel and one way communication to transfer packed states from the goroutine receiving user input to the goroutine that actually sends the states. 
-
-The channel is unbuffered, which means that it has a s
+In the current design, the master launches one goroutinea - a SDL window where the user enters keyboard input and another goroutine multicasting new goroutines to the slaves. These goroutines use a unbuffered channel and one way communication to transfer packed states from the goroutine receiving user input to the goroutine multicasting the states. 
 
 
 Where is the concurrency??
+
+paragraph about data flow
 
 \subsection{Data transfer}
 marshal, unmarshal, send, receive
@@ -258,6 +258,11 @@ current solution - load all images into ram. what about cache?
 calculate start position, bounds – only draw images with a position inside the tile's bounds
 \subsection{Why SDL?}
 In this project SDL was chosen as the graphical framework as it is easy to use and don't need much time setting up. Alternatives could be OpenGL where the graphical effects would have been better. 
+
+\subsection{Limitations of the design}
+sdl vs openGl - gliding/smooth movement and smooth zoom
+input method - sdl - could be web socket based
+cache??
 
 \subsection{Single point of failure}
 This system has many "single points of failure". This is partly because of the master - a single node receiving the user input, converting it into a state and forwarding it to all the tiles in the configuration by multicast - but also because of the tiles. If only one of the tiles i the configuration or a tile's projector goes down, there total image viewed will not be complete.  

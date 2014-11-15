@@ -41,6 +41,7 @@
 \contentsline {section}{\numberline {12}Discussion}{11}
 \contentsline {subsection}{\numberline {12.1}Draw/Blit}{11}
 \contentsline {subsection}{\numberline {12.2}Why SDL?}{11}
-\contentsline {subsection}{\numberline {12.3}Single point of failure}{11}
+\contentsline {subsection}{\numberline {12.3}Limitations of the design}{11}
+\contentsline {subsection}{\numberline {12.4}Single point of failure}{11}
 \contentsline {section}{\numberline {13}Further works}{11}
 \contentsline {section}{\numberline {14}Conclusion}{11}
