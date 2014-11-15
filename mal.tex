@@ -54,25 +54,40 @@ Troms\o, Norway}
 \newpage
 
 
-\section{Preface}
-This should be before contents...
-Thank following people:
-John Marcus Bjørndalen - advisor, 
-bjørn - technical staff,
-...
 
 
-\section{Summary}
+\section{Abstract}
+During the last 10 years the HPDS group of the computer science department at the University of Tromsø has developed the Tromsø Display Wall - a wall size tiled display that contains several displays and computers.
+
+The gigapixel image viewer:
+
+
+Limitations:
 As the current implementation of the Gigapixel image viewer at the Troms\o Displaywall is inefficient, hard to maintain and unstable, the need for a new design is growing. This technical report will describe the new concurrent and flexible design of the Gigapixel image viewer.
 
 lessons learned.
 
+\section{Acknowledgements}
+dedicated to..
+thank advisor..
+thank family
+thank friends
+\newline
+John Marcus Bjørndalen - advisor, 
+technical staff working at the displaywall
+
+\section{List of figures}
+\section{List of tables}
+
+
 \section{Introduction}
-\subsection{Motivation}
-What is the motivation for this project?
-Maintaining the system
-more effective - concurrency
-As the current implementation of the Gigapixel image viewer at the Tromsø Displaywall is inefficient, hard to maintain and unstable. Because of this, the need for a new design is growing.  
+\subsection{Overview}
+About the (Tromsø) Display Wall...
+
+What is the image viewer?
+
+Museum...
+
 
 \subsection{Description of problem}
 What is the problem I am solving?
@@ -82,14 +97,26 @@ more efficient - concurrent
 maintainable
 configuration - display-cloud
 
-\subsection{Requirements...?}
+\subsection{Motivation}
+What is the motivation for this project?
+Maintaining the system
+more effective - concurrency
+As the current implementation of the Gigapixel image viewer at the Tromsø Displaywall is inefficient, hard to maintain and unstable. Because of this, the need for a new design is growing.  
+
+\subsection{Contributions}
+A new concurrent design of the Gigapixel Image Viewer.
+
+\subsection{Limitations/requirements}
 What is the requirements?
 
 \subsection{Outline}
 What will this report contain?
 In section blabla
 
-
+\section{Related Work}
+\subsection{Introduction}
+\subsection{others work on the wall}
+Get some papers please...
 
 \section{Technical Background - Theoretical framework}
 Talk about the technicalities... Golang, concurrency vs parallelism,
@@ -125,14 +152,33 @@ Concurrency more powerful than parallelism.
 \newline
 https://blog.golang.org/concurrency-is-not-parallelism
 
-\section{Methods}
-\section{Requirements specification}
 
 \section{Design}
-The image viewer is designed with a master-slave solution, where the master is either the frontend node or a laptop and the slaves is the 28 tiles in the cluster. An image is 
-\subsection{Display Tool - Keyboard input}
-\subsection{Draw/Blit}
-calculate start position, bounds – only draw images with a position inside the tile's bounds
+\subsection{Overview}
+The image viewer is designed with a master-slave solution. The master can either be the frontend node or an ordinary laptop and the slaves is the 28 tiles in the cluster. Images located on either the shared disk space or at a web server is fetched by the slaves into shared memory and blitted on a surface viewed by a projector on the master's command. The master listens for input from the user that changes the position variables of the total image put together by each tile viewing several smaller images. The tiles used to view images is determined by configuration files.
+
+About the system -  a brief overview. The method used - master slave. The components involved
+
+\subsection{Configuration}
+The viewer is configured using two configuration files. One for the master and one for the slaves. The master uses the configuration file to get the ip-addresses to all the slaves participating in the viewer. The viewer doesn't need to use all 28 tiles. It can use any number of tiles from 1 to 28, but the tiles should be physical neighbours in the total image on the wall. 
+
+The slaves all use the same configuration file. This file contains the id of each participating tile and their corresponding physical position in the configuration. This position is given to each tile regardless of its original position in the big picture, but by comparing it's position to the others in the configuration. 
+
+As long as they all are neighbours...
+
+The configuration files can be located and fetched from the shared disk or from a given url. The master's configuration file is opened and read only once, before starting to send data to the slaves. The slaves' configuration file is opened and read once by each slave. This is done before they start to fetch images and it is necessary to manage the configuration as an initialization when the viewer is started.
+
+\subsection{The master}
+The master's main tasks is to:
+\begin{enumerate}
+\item receive input from the user
+\item determine whether this changes the position variables of the composed image
+\item pack position variables into a state
+\item multicast new states to the slaves in the configuration
+\end{enumerate}
+
+
+
 \subsection{Data transfer}
 marshal, unmarshal, send, receive
 \subsubsection{Program flow}
@@ -203,10 +249,15 @@ current solution - load all images into ram. what about cache?
 \section{Tests/Evaluation}
 \section{Results}
 \section{Discussion}
+\subsection{Draw/Blit}
+calculate start position, bounds – only draw images with a position inside the tile's bounds
 \subsection{Why SDL?}
 In this project SDL was chosen as the graphical framework as it is easy to use and don't need much time setting up. Alternatives could be OpenGL where the graphical effects would have been better. 
 
-\subsection{Further works}
+\subsection{Single point of failure}
+This system has many "single points of failure". This is partly because of the master - a single node receiving the user input, converting it into a state and forwarding it to all the tiles in the configuration by multicast - but also because of the tiles. If only one of the tiles i the configuration or a tile's projector goes down, there total image viewed will not be complete.  
+
+\section{Further works}
 in the future...
 
 \section{Conclusion}
