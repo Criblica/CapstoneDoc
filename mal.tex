@@ -174,10 +174,15 @@ The master's main tasks is to:
 \item receive input from the user
 \item determine whether this changes the position variables of the composed image
 \item pack position variables into a state
-\item multicast new states to the slaves in the configuration
+\item multicast new states periodically to the slaves in the configuration
 \end{enumerate}
 
+In the current design, the master launches one goroutinea - a SDL window where the user enters keyboard input and another goroutine multicasting new goroutines to the slaves. These goroutines use a channel and one way communication to transfer packed states from the goroutine receiving user input to the goroutine that actually sends the states. 
 
+The channel is unbuffered, which means that it has a s
+
+
+Where is the concurrency??
 
 \subsection{Data transfer}
 marshal, unmarshal, send, receive
