@@ -210,7 +210,7 @@ As the master sends the new states to all slaves not knowing which slaves will a
 \item blit them periodically at their local position
 \end{enumerate}
 
-the slaves is the ones doing the necessary calculation on the states in order to fetch the correct image and blit it on the right position.
+As a consequence of the master's behaviour, the slaves is the ones doing the necessary calculation on the states in order to fetch the correct images and blit them on the right position.
 
 \paragraph{When a slave starts up}
 it first fetches the configuration file holding it's virtual position and looks it up by the use of it's unique id. Like the master, the slaves also launch two main goroutines, only they have a bit different task. One goroutine is constantly listening to a http connection for incoming data and the other is responsible for periodically blit images to a SDL window at a calculated position. These goroutines also use a unbuffered channel to transfer received states from the first goroutine to the second. 
@@ -219,43 +219,22 @@ it first fetches the configuration file holding it's virtual position and looks 
 will always listen to the http connection and for each state it receives, the state will be put into the state buffer. Here it will block until the state is received at the other goroutine where it is unpacked into the position variables again. 
 
 \paragraph{The position variables}
-form a global position of the composed image and by using the virtual position from the configuration, it calculates it's boundaries for which the global position have to be inside in order to fetch an image. 
+form a global position of the composed image and by using the slave's virtual position from the configuration, it calculates it's boundaries for which the global position have to be inside in order to fetch an image. 
 
-E.g. if we set the (virtual)position of a tile to be (vx,vy) in the configuration, it's boundaries will be from (vx*1024-256, vy*768-256) to (vx*1024+1024, vy*768+768). In a case where the global position is inside this bounds, the local position is calculated. The local position is where the image should be blitted on this tile's SDL surface.
+E.g. if we set the virtual position of a tile to be (vx,vy) in the configuration, it's boundaries will be from (vx*1024-256, vy*768-256) to (vx*1024+1024, vy*768+768). In a case where the global position is inside this bounds, the local position is calculated. The local position is where the image should be blitted on this tile's SDL surface.
 
 \paragraph{When we know}
-that the position variables place images inside these bounds, the filename of the images to blit is generated. This is calculated using the position variables and for each filename generated, it will try to load the corresponding image into memory.
+that the position variables place images inside these bounds, the filename of the images to blit is generated. This is calculated using the position variables and for each filename generated, it will try to load the corresponding image into memory. These images will be inserted into a map using the filename as key and a pointer to the image as value. The map is of a certain size and when it is full, old map items must be freed in order to insert new ones.
 
-\paragraph{If the filename}
-was valid, -> loading an image with pointer non equal to nil, it will be blitted at it's local position. This position is calculated using the global position and offset constants to vary the position of each image.
+\paragraph{Depending on}
+the position variables, the filenames generated is not all valid. The protocol is to load the image anyway and if the filename is invalid, the pointer to the image is nil. This pointer is inserted to the map regardless of it's value, but only pointers not equal to nil will be blitted at it's local position. This position is calculated using the global position and offset constants to vary the position of each image.    
 
-\paragraph{Concurrency} 
-always use 20 goroutines to blit each potential image concurrently. 
-
-from -256 to 1024 max 5 images and from -256 to 768 max 4 images. 
-
-This forms 20 potential images since each image's position is the upper left corner, not the middle of the image.
+\paragraph{The design of the slaves} 
+is concurrent in several ways. First, a slave can blit an image at the same time as it receives a new state from the master. The goroutine receiving states from the master only blocks as long as the gorutine blitting images is not ready to receive the new state.
+Second, the goroutine blitting images is aclually not doing this job alone. Since an image can be blitted at any x position from -256 to 1024 (local position) and any y position from -256 to 768, this makes a maximum of 5 images in width at a time and 4 images in height at a time. Since each image's position is the upper left corner, not the middle of the image the goroutine always start 20 new goroutines. This is one for each of these potential images, so the calculation of the image's position, the fetching of the image and the blitting of each image can happen concurrently. Before updating a tile's sdl surface all images must be blitted and since different goroutines work with it's own image, all from the same state, we have to wait for all goroutines to finish before the update can take place.
 
 \subsection{Data flow}
-about the rates\newline
 Whatever kind of input method is chosen, the received input will change the position variables kept at the master. Only when at least one of these variables are changed, they all will be marshalled/packed into a state. Every time a new state is paced it will be inserted into a buffer/queue (FIFO)  where it will be sent out as a multicast to the slaves periodically.
-\newline
-\newline
-Channel as buffer:
-Receivers always block until there is data to receive. If the channel is unbuffered, the sender blocks until the receiver has received the value. If the channel has a buffer, the sender blocks only until the value has been copied to the buffer; if the buffer is full, this means waiting until some receiver has retrieved a value.
-
-when a channel is full, the sender waits for another goroutine to make some room by receiving
-you can see an unbuffered channel as an always full one : there must be another goroutine to take what the sender sends.
-\newline
-\newline
-Variables:
-length of buffer/queue
-sendrate – how often should we let it send, FPS...
-empty the whole queue or just a bit?
-\newline
-\newline
-We do this because we want the movement of the image to be as accurate as possible according to time with a minimal latency. 
-We can afford to loose some states in this solution, compared to a solution where you send all states, obtain a huge latency over time and cannot afford loosing any states.
 
 \paragraph{Input rate}
 The input rate is the amount of received keyboard inputs during one second. This is at its peak when the image is constantly moving...
@@ -263,7 +242,7 @@ The input rate is the amount of received keyboard inputs during one second. This
 The amount of times the position variables (x, y and z) is changed by the user input during one second will from now on be referred to as the “vcr” (variable change rate).
 Depending on the vcr is high or low, it might create a bottleneck in form of a queue before a state is multicasted to the slaves... 
 \paragraph{Send rate - muticast}
-The send rate is the amount of multicasts the master can complete per second. As the master will send the current state of the position variables periodically, it will have a constand send rate as long as there is enough states. If the send rate is lower than the vcr, the send queue will be filled up and a latency will occur while the input thread is blocked. As the queue grows larger, the time from receiving user input at the master to the corresponding state is sent from the master also increases. 
+The send rate is the amount of multicasts the master can complete per second. As the master will send the current state of the position variables periodically, it will have a constant send rate as long as there is enough states. If the send rate is lower than the vcr, the send queue will be filled up and a latency will occur while the input thread is blocked. As the queue grows larger, the time from receiving user input at the master to the corresponding state is sent from the master also increases. 
 Not dealing with this problem will result in a growing latency and (show graph) from tests... 
 To deal with this problem we introduce a empty policy saying that if the a state is tried to be inserted into a full buffer or the buffer grows too large, we empty the whole buffer.
 \paragraph{Blit rate}
@@ -271,7 +250,7 @@ Amount of blits per second/FPS. Constant FPS/given...
 Flow charts
 
 \subsection{Network flow}
-A big design choice is to choose which method to use when sending data to the slaves. Several methods was considered when making this choice. 
+A big design choice was to choose which method to use when sending data to the slaves. Several methods was considered when making this choice. 
 
 \paragraph{Sequential solution}
 The sequential solution is based on the master sending only one request to a chosen slave. Depending on how this solution is implemented, the slave forwards this request to some or all of its neighbours in vertical, horizontal or both directions. By introducing a rule about not blitting or forwarding a state that equals the last received state, a slave receiving two or more of the same request will not contribute to spamming the other slaves with the same request over and over again. To make this solution most effective the master should choose the tile that is closest to the center due to the configuration.
@@ -289,15 +268,16 @@ What happens is that the delay causes S to receive two different requests from A
 Because of the concurrency, this is not a "clean" sequential solution. That would be to let the master send one request to one slave and let each slave forward only one request further. This in not even considered as an alternative since the last slave in the queue has to wait for all other slaves in the configuration to forward the request. Forwarding the request as much as 27 times would create a even greater delay before the last slave receives the request.
 
 \paragraph{Multicast solution}
-The multicast solution is quite simpler. The master sends the same request to all slaves by looping over the ip addresses and starting goroutines that send the request to each of them. This is technically not a multicast since the sending of requests is done concurrently, but it is a multicast like solution.
+The multicast solution is quite simpler. The master sends the same request to all slaves by looping over the ip addresses and starting goroutines that send the request to each of them. This is technically not a multicast since the sending of requests is done concurrently, but it is a multicast-like solution.
 
 This will still result in a little delay from when each of the slaves receives the request, but this delay is so little that other factors will have greater impact on the total delay from a request is sent to a request is blitted on the screen. E.g. network traffic at each of the slaves or latency from fetching an image.
-\newline
-\newline
-By comparing the methods mentioned, considering how the latency is scaling when adding more tiles to the configuration the choice of method to use for data transfer over the network was the multicast solution. 
+
 
 \paragraph{Disk based solution}
 assuming that opening, reading, writing and closing of files for each new state is less efficient than sending them over the network...
+\newline
+\newline
+By comparing the methods mentioned, considering how the latency is scaling when adding more tiles to the configuration, the choice of method to use for data transfer over the network was the multicast solution. 
 
 \subsection{Memory-cache}
 current solution - load all images into ram. what about cache?
@@ -308,12 +288,32 @@ pre-fetching of images
 The design section explains the most. Not sure what to write here. Do I need this section?
 \section{Tests/Evaluation}
 Do tests!
+
+benchmark
+
+
 \section{Results}
-Present result from tests by hte use of graphs, tables and figures...
+Present result from tests by the use of graphs, tables and figures...
 \newpage
 \section{Discussion}
 \subsection{Unbuffered channel as buffer}
 over 900 loop cycles per second. Too many variable changes - ok to wait for a state to be received before sending another. If it turns out later that the send rate is too low and we want the master to send states more often, then we can change the design to use a buffered channel instead. When using a buffered channel we can set the size of how many items it can contain and the goroutine inserting items into the buffer will only block until the item is written into the channel. 
+
+Channel as buffer:
+Receivers always block until there is data to receive. If the channel is unbuffered, the sender blocks until the receiver has received the value. If the channel has a buffer, the sender blocks only until the value has been copied to the buffer; if the buffer is full, this means waiting until some receiver has retrieved a value.
+
+when a channel is full, the sender waits for another goroutine to make some room by receiving
+you can see an unbuffered channel as an always full one : there must be another goroutine to take what the sender sends.
+
+\subsection{Buffered channel}
+Variables:
+length of buffer/queue
+sendrate – how often should we let it send, FPS...
+empty the whole queue or just a bit?
+
+\subsection{Loss of states}
+We do this because we want the movement of the image to be as accurate as possible according to time with a minimal latency. 
+We can afford to loose some states in this solution, compared to a solution where you send all states, obtain a huge latency over time and cannot afford loosing any states.
 
 \subsection{Why SDL?}
 In this project SDL was chosen as the graphical framework as the author already was familiar with it. Alternatives could be OpenGL where the graphical effects would have been better. 

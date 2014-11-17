@@ -33,9 +33,9 @@
 \contentsline {paragraph}{The first goroutine}{12}
 \contentsline {paragraph}{The position variables}{12}
 \contentsline {paragraph}{When we know}{12}
-\contentsline {paragraph}{If the filename}{12}
-\contentsline {paragraph}{Concurrency}{12}
-\contentsline {subsection}{\numberline {8.5}Data flow}{12}
+\contentsline {paragraph}{Depending on}{12}
+\contentsline {paragraph}{The design of the slaves}{12}
+\contentsline {subsection}{\numberline {8.5}Data flow}{13}
 \contentsline {paragraph}{Input rate}{13}
 \contentsline {paragraph}{Variable change rate}{13}
 \contentsline {paragraph}{Send rate - muticast}{13}
@@ -50,8 +50,10 @@
 \contentsline {section}{\numberline {11}Results}{16}
 \contentsline {section}{\numberline {12}Discussion}{17}
 \contentsline {subsection}{\numberline {12.1}Unbuffered channel as buffer}{17}
-\contentsline {subsection}{\numberline {12.2}Why SDL?}{17}
-\contentsline {subsection}{\numberline {12.3}Limitations of the design}{17}
-\contentsline {subsection}{\numberline {12.4}Single point of failure}{17}
-\contentsline {section}{\numberline {13}Further works}{18}
-\contentsline {section}{\numberline {14}Conclusion}{19}
+\contentsline {subsection}{\numberline {12.2}Buffered channel}{17}
+\contentsline {subsection}{\numberline {12.3}Loss of states}{17}
+\contentsline {subsection}{\numberline {12.4}Why SDL?}{17}
+\contentsline {subsection}{\numberline {12.5}Limitations of the design}{17}
+\contentsline {subsection}{\numberline {12.6}Single point of failure}{18}
+\contentsline {section}{\numberline {13}Further works}{19}
+\contentsline {section}{\numberline {14}Conclusion}{20}
