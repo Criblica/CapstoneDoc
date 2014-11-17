@@ -1,47 +1,57 @@
 \select@language {british}
 \contentsline {section}{\numberline {1}Abstract}{4}
 \contentsline {section}{\numberline {2}Acknowledgements}{4}
-\contentsline {section}{\numberline {3}List of figures}{4}
-\contentsline {section}{\numberline {4}List of tables}{4}
-\contentsline {section}{\numberline {5}Introduction}{4}
-\contentsline {subsection}{\numberline {5.1}Overview}{4}
-\contentsline {subsection}{\numberline {5.2}Description of problem}{4}
-\contentsline {subsection}{\numberline {5.3}Motivation}{4}
-\contentsline {subsection}{\numberline {5.4}Contributions}{5}
-\contentsline {subsection}{\numberline {5.5}Limitations/requirements}{5}
-\contentsline {subsection}{\numberline {5.6}Outline}{5}
-\contentsline {section}{\numberline {6}Related Work}{5}
-\contentsline {subsection}{\numberline {6.1}Introduction}{5}
-\contentsline {subsection}{\numberline {6.2}others work on the wall}{5}
-\contentsline {section}{\numberline {7}Technical Background - Theoretical framework}{5}
-\contentsline {subsection}{\numberline {7.1}The Go programming language}{5}
-\contentsline {subsubsection}{\numberline {7.1.1}Why use Go?}{5}
-\contentsline {subsubsection}{\numberline {7.1.2}Concurrency build on CSP}{6}
-\contentsline {subsubsection}{\numberline {7.1.3}Goroutines instead of threads}{6}
-\contentsline {subsection}{\numberline {7.2}Concurrency}{6}
-\contentsline {subsubsection}{\numberline {7.2.1}Concurrency vs. Parallelism}{6}
-\contentsline {section}{\numberline {8}Design}{7}
-\contentsline {subsection}{\numberline {8.1}Overview}{7}
-\contentsline {subsection}{\numberline {8.2}Configuration}{7}
-\contentsline {subsection}{\numberline {8.3}The master}{7}
-\contentsline {subsection}{\numberline {8.4}Data transfer}{8}
-\contentsline {subsubsection}{\numberline {8.4.1}Program flow}{8}
-\contentsline {subsubsection}{\numberline {8.4.2}Data flow}{8}
-\contentsline {paragraph}{Input rate}{9}
-\contentsline {paragraph}{Variable change rate}{9}
-\contentsline {paragraph}{Send Rate-muticast}{9}
-\contentsline {paragraph}{blit rate}{9}
-\contentsline {subsubsection}{\numberline {8.4.3}Network flow}{9}
-\contentsline {paragraph}{Sequential solution}{9}
-\contentsline {paragraph}{Multicast solution}{10}
-\contentsline {subsubsection}{\numberline {8.4.4}Memory-cache}{10}
-\contentsline {section}{\numberline {9}Implementation}{11}
-\contentsline {section}{\numberline {10}Tests/Evaluation}{11}
-\contentsline {section}{\numberline {11}Results}{11}
-\contentsline {section}{\numberline {12}Discussion}{11}
-\contentsline {subsection}{\numberline {12.1}Draw/Blit}{11}
-\contentsline {subsection}{\numberline {12.2}Why SDL?}{11}
-\contentsline {subsection}{\numberline {12.3}Limitations of the design}{11}
-\contentsline {subsection}{\numberline {12.4}Single point of failure}{11}
-\contentsline {section}{\numberline {13}Further works}{11}
-\contentsline {section}{\numberline {14}Conclusion}{11}
+\contentsline {section}{\numberline {3}List of figures}{5}
+\contentsline {section}{\numberline {4}List of tables}{5}
+\contentsline {section}{\numberline {5}Introduction}{6}
+\contentsline {subsection}{\numberline {5.1}Overview}{6}
+\contentsline {subsection}{\numberline {5.2}Description of problem}{6}
+\contentsline {subsection}{\numberline {5.3}Motivation}{6}
+\contentsline {subsection}{\numberline {5.4}Contributions}{6}
+\contentsline {subsection}{\numberline {5.5}Requirements and limitations}{6}
+\contentsline {subsection}{\numberline {5.6}Outline}{6}
+\contentsline {section}{\numberline {6}Related Work}{7}
+\contentsline {subsection}{\numberline {6.1}Introduction}{7}
+\contentsline {subsection}{\numberline {6.2}others work on the wall}{7}
+\contentsline {section}{\numberline {7}Technical Background/Theoretical framework}{8}
+\contentsline {subsection}{\numberline {7.1}The Go programming language}{8}
+\contentsline {subsubsection}{\numberline {7.1.1}Why use Go?}{8}
+\contentsline {subsubsection}{\numberline {7.1.2}Concurrency build on CSP}{8}
+\contentsline {subsubsection}{\numberline {7.1.3}Goroutines instead of threads}{8}
+\contentsline {subsection}{\numberline {7.2}Concurrency}{9}
+\contentsline {subsubsection}{\numberline {7.2.1}Concurrency vs. Parallelism}{9}
+\contentsline {section}{\numberline {8}Design}{10}
+\contentsline {subsection}{\numberline {8.1}Overview}{10}
+\contentsline {subsection}{\numberline {8.2}Configuration}{10}
+\contentsline {subsection}{\numberline {8.3}The master}{10}
+\contentsline {paragraph}{At startup,}{11}
+\contentsline {paragraph}{To interact with the user}{11}
+\contentsline {paragraph}{The multicast goroutine,}{11}
+\contentsline {paragraph}{The benefit}{11}
+\contentsline {subsection}{\numberline {8.4}The slaves}{11}
+\contentsline {paragraph}{When a slave starts up}{12}
+\contentsline {paragraph}{The first goroutine}{12}
+\contentsline {paragraph}{The position variables}{12}
+\contentsline {paragraph}{When we know}{12}
+\contentsline {paragraph}{If the filename}{12}
+\contentsline {paragraph}{Concurrency}{12}
+\contentsline {subsection}{\numberline {8.5}Data flow}{12}
+\contentsline {paragraph}{Input rate}{13}
+\contentsline {paragraph}{Variable change rate}{13}
+\contentsline {paragraph}{Send rate - muticast}{13}
+\contentsline {paragraph}{Blit rate}{13}
+\contentsline {subsection}{\numberline {8.6}Network flow}{14}
+\contentsline {paragraph}{Sequential solution}{14}
+\contentsline {paragraph}{Multicast solution}{15}
+\contentsline {paragraph}{Disk based solution}{15}
+\contentsline {subsection}{\numberline {8.7}Memory-cache}{15}
+\contentsline {section}{\numberline {9}Implementation??}{16}
+\contentsline {section}{\numberline {10}Tests/Evaluation}{16}
+\contentsline {section}{\numberline {11}Results}{16}
+\contentsline {section}{\numberline {12}Discussion}{17}
+\contentsline {subsection}{\numberline {12.1}Unbuffered channel as buffer}{17}
+\contentsline {subsection}{\numberline {12.2}Why SDL?}{17}
+\contentsline {subsection}{\numberline {12.3}Limitations of the design}{17}
+\contentsline {subsection}{\numberline {12.4}Single point of failure}{17}
+\contentsline {section}{\numberline {13}Further works}{18}
+\contentsline {section}{\numberline {14}Conclusion}{19}

@@ -63,22 +63,19 @@ The gigapixel image viewer:
 
 
 Limitations:
-As the current implementation of the Gigapixel image viewer at the Troms\o Displaywall is inefficient, hard to maintain and unstable, the need for a new design is growing. This technical report will describe the new concurrent and flexible design of the Gigapixel image viewer.
+As the current implementation of the Gigapixel image viewer at the Troms\o Displaywall is hard to maintain and... the need for a new design is growing. This technical report will describe the new concurrent and flexible design of the Gigapixel image viewer.
 
-lessons learned.
+lessons learned...
 
 \section{Acknowledgements}
 dedicated to..
 thank advisor..
-thank family
-thank friends
-\newline
-John Marcus Bjørndalen - advisor, 
-technical staff working at the displaywall
-
+thank family and friends..
+thank technical staff working at the displaywall
+\newpage
 \section{List of figures}
 \section{List of tables}
-
+\newpage
 
 \section{Introduction}
 \subsection{Overview}
@@ -91,34 +88,41 @@ Museum...
 
 \subsection{Description of problem}
 What is the problem I am solving?
-bottleneck
-unstable
-more efficient - concurrent
-maintainable
-configuration - display-cloud
+
+bottleneck,
+unstable?,
+more efficient - concurrent,
+maintainable,
+configuration,
+display-cloud?
 
 \subsection{Motivation}
 What is the motivation for this project?
-Maintaining the system
-more effective - concurrency
-As the current implementation of the Gigapixel image viewer at the Tromsø Displaywall is inefficient, hard to maintain and unstable. Because of this, the need for a new design is growing.  
+
+Maintaining the system,
+more effective - concurrency,
+As the current implementation of the Gigapixel image viewer at the Tromsø Displaywall is hard to maintain and... Because of this, the need for a new design is growing.  
 
 \subsection{Contributions}
-A new concurrent design of the Gigapixel Image Viewer.
+A new concurrent design of the Gigapixel Image Viewer..
 
-\subsection{Limitations/requirements}
-What is the requirements?
+\subsection{Requirements and limitations}
+What is the requirements and limitations of the design?
 
 \subsection{Outline}
 What will this report contain?
-In section blabla
-
+In section..
+\newpage
 \section{Related Work}
 \subsection{Introduction}
 \subsection{others work on the wall}
-Get some papers please...
+Get some papers...
 
-\section{Technical Background - Theoretical framework}
+9 years of the displaywall,
+
+earlier design of the viewer
+\newpage
+\section{Technical Background/Theoretical framework}
 Talk about the technicalities... Golang, concurrency vs parallelism,
 \subsection{The Go programming language}
 Go is an open source project developed by a team at Google as well as other contributors from the open source community. It was designed to address the problems faced in software development at Google and became a great tool for engineering large software projects.
@@ -152,12 +156,11 @@ Concurrency more powerful than parallelism.
 \newline
 https://blog.golang.org/concurrency-is-not-parallelism
 
-
+\newpage
 \section{Design}
 \subsection{Overview}
-The image viewer is designed with a master-slave solution. The master can either be the frontend node or an ordinary laptop and the slaves is the 28 tiles in the cluster. Images located on either the shared disk space or at a web server is fetched by the slaves into shared memory and blitted on a surface viewed by a projector on the master's command. The master listens for input from the user that changes the position variables of the total image put together by each tile viewing several smaller images. The tiles used to view images is determined by configuration files.
+The image viewer is designed with a master-slave solution. The master can either be the frontend node or an ordinary laptop and the slaves is the 28 tiles in the cluster. Images located on either the shared disk space or at a web server is fetched by the slaves into shared memory and blitted on a surface viewed by a projector on the master's command. The master listens for input from the user that changes the position variables of the composed image put together by each tile viewing several smaller images. The tiles used to view images is determined by configuration files.
 
-About the system -  a brief overview. The method used - master slave. The components involved
 
 \subsection{Configuration}
 The viewer is configured using two configuration files. One for the master and one for the slaves. The master uses the configuration file to get the ip-addresses to all the slaves participating in the viewer. The viewer doesn't need to use all 28 tiles. It can use any number of tiles from 1 to 28, but the tiles should be physical neighbours in the total image on the wall. 
@@ -169,16 +172,27 @@ As long as they all are neighbours...
 The configuration files can be located and fetched from the shared disk or from a given url. The master's configuration file is opened and read only once, before starting to send data to the slaves. The slaves' configuration file is opened and read once by each slave. This is done before they start to fetch images and it is necessary to manage the configuration as an initialization when the viewer is started.
 
 \subsection{The master}
-The master's main tasks is to:
+The master can run either on the frontend node or at any laptop on the same network as the slaves. It's main tasks is to:
 \begin{enumerate}
 \item receive input from the user
-\item determine whether this changes the position variables of the composed image
-\item pack position variables into a state
+\item determine whether the input changes the position variables of the composed image
+\item pack changed position variables into a state
 \item multicast new states periodically to the slaves in the configuration
 \end{enumerate}
 
-In the current design, the master launches one goroutine - a SDL window where the user enters keyboard input and another goroutine multicasting new states to the slaves. These goroutines use a unbuffered channel and one way communication to transfer packed states from the goroutine receiving user input to the goroutine multicasting the states. 
-When a new state is fetched from the channel a multicast operation will occur periodically. N times per second will the state be sent by a multicast-like operation. 
+\paragraph{At startup,}
+the master launches two infinite running goroutines, one receiving user input and another multicasting new states to the slaves. These goroutines use a unbuffered channel and one way communication to transfer packed states from the goroutine receiving user input to the goroutine multicasting the states.
+
+\paragraph{To interact with the user}
+the master opens an SDL-window constantly listening for keyboard input. The input changes the position variables, that is an x and y position as well as the zoom level. When this happens, these variables is packed into a state and inserted into the state channel. Since the state channel is unbuffered, this goroutine blocks until the state is fetched by the goroutine multicasting it.
+
+\paragraph{The multicast goroutine,}
+will periodically fetch states from the state channel and do a multicast operation. N times per second the state will be sent by a multicast-like operation. First time the master do this operation, it will fetch the configuration file to get a list of ip-addresses to the slaves. It will now do the multicast-like operation, which is actually a loop starting goroutines writing the state into http connections based on each of the slaves' ip addresses from the configuration file. 
+
+
+\paragraph{The benefit}
+of the master's design is that while it multicasts a state fetched from the buffer it can still receive keyboard input. These operations happens concurrently   
+This happens concurrently
 
 receive input -> as result, change variables -> insert to buffer -> (fetch from buffer and start multicast) periodically
 
@@ -186,11 +200,43 @@ Where is the concurrency??
 
 paragraph about data flow
 
-\subsection{Data transfer}
-marshal, unmarshal, send, receive
-\subsubsection{Program flow}
-how it works  - shortly
-\subsubsection{Data flow}
+\subsection{The slaves}
+As the master sends the new states to all slaves not knowing which slaves will actually use this information, it is up to each slave to take this information in use. In short, their main tasks is to:
+\begin{enumerate}
+\item listen for states multicasted by the master
+\item calculate the image's local position
+\item determine if any images is located in it's bounds
+\item fetch those images into memory
+\item blit them periodically at their local position
+\end{enumerate}
+
+the slaves is the ones doing the necessary calculation on the states in order to fetch the correct image and blit it on the right position.
+
+\paragraph{When a slave starts up}
+it first fetches the configuration file holding it's virtual position and looks it up by the use of it's unique id. Like the master, the slaves also launch two main goroutines, only they have a bit different task. One goroutine is constantly listening to a http connection for incoming data and the other is responsible for periodically blit images to a SDL window at a calculated position. These goroutines also use a unbuffered channel to transfer received states from the first goroutine to the second. 
+
+\paragraph{The first goroutine}
+will always listen to the http connection and for each state it receives, the state will be put into the state buffer. Here it will block until the state is received at the other goroutine where it is unpacked into the position variables again. 
+
+\paragraph{The position variables}
+form a global position of the composed image and by using the virtual position from the configuration, it calculates it's boundaries for which the global position have to be inside in order to fetch an image. 
+
+E.g. if we set the (virtual)position of a tile to be (vx,vy) in the configuration, it's boundaries will be from (vx*1024-256, vy*768-256) to (vx*1024+1024, vy*768+768). In a case where the global position is inside this bounds, the local position is calculated. The local position is where the image should be blitted on this tile's SDL surface.
+
+\paragraph{When we know}
+that the position variables place images inside these bounds, the filename of the images to blit is generated. This is calculated using the position variables and for each filename generated, it will try to load the corresponding image into memory.
+
+\paragraph{If the filename}
+was valid, -> loading an image with pointer non equal to nil, it will be blitted at it's local position. This position is calculated using the global position and offset constants to vary the position of each image.
+
+\paragraph{Concurrency} 
+always use 20 goroutines to blit each potential image concurrently. 
+
+from -256 to 1024 max 5 images and from -256 to 768 max 4 images. 
+
+This forms 20 potential images since each image's position is the upper left corner, not the middle of the image.
+
+\subsection{Data flow}
 about the rates\newline
 Whatever kind of input method is chosen, the received input will change the position variables kept at the master. Only when at least one of these variables are changed, they all will be marshalled/packed into a state. Every time a new state is paced it will be inserted into a buffer/queue (FIFO)  where it will be sent out as a multicast to the slaves periodically.
 \newline
@@ -199,7 +245,7 @@ Channel as buffer:
 Receivers always block until there is data to receive. If the channel is unbuffered, the sender blocks until the receiver has received the value. If the channel has a buffer, the sender blocks only until the value has been copied to the buffer; if the buffer is full, this means waiting until some receiver has retrieved a value.
 
 when a channel is full, the sender waits for another goroutine to make some room by receiving
-you can see an unbuffered channel as an always full one : there must be another groutine to take what the sender sends.
+you can see an unbuffered channel as an always full one : there must be another goroutine to take what the sender sends.
 \newline
 \newline
 Variables:
@@ -212,18 +258,19 @@ We do this because we want the movement of the image to be as accurate as possib
 We can afford to loose some states in this solution, compared to a solution where you send all states, obtain a huge latency over time and cannot afford loosing any states.
 
 \paragraph{Input rate}
-The input rate is the amount of received user input during one second. This is at its peak when the image is constantly moving.
+The input rate is the amount of received keyboard inputs during one second. This is at its peak when the image is constantly moving...
 \paragraph{Variable change rate}
 The amount of times the position variables (x, y and z) is changed by the user input during one second will from now on be referred to as the “vcr” (variable change rate).
-Depending on the vcr is high or low, it might create a bottleneck in form of a queue before a state is multicasted to the slaves. 
-\paragraph{Send Rate-muticast}
-The send rate is the amount of multicasts the master can complete per second. As the master will send the current state of the position variables periodically, it will have a certain send rate. If the send rate is lower than the vcr, the send queue will be filled up and a latency will occur. As the queue grows larger, the time from receiving user input at the master to the corresponding state is sent from the master also increases. 
+Depending on the vcr is high or low, it might create a bottleneck in form of a queue before a state is multicasted to the slaves... 
+\paragraph{Send rate - muticast}
+The send rate is the amount of multicasts the master can complete per second. As the master will send the current state of the position variables periodically, it will have a constand send rate as long as there is enough states. If the send rate is lower than the vcr, the send queue will be filled up and a latency will occur while the input thread is blocked. As the queue grows larger, the time from receiving user input at the master to the corresponding state is sent from the master also increases. 
 Not dealing with this problem will result in a growing latency and (show graph) from tests... 
 To deal with this problem we introduce a empty policy saying that if the a state is tried to be inserted into a full buffer or the buffer grows too large, we empty the whole buffer.
-\paragraph{blit rate}
+\paragraph{Blit rate}
+Amount of blits per second/FPS. Constant FPS/given...
 Flow charts
 
-\subsubsection{Network flow}
+\subsection{Network flow}
 A big design choice is to choose which method to use when sending data to the slaves. Several methods was considered when making this choice. 
 
 \paragraph{Sequential solution}
@@ -249,17 +296,27 @@ This will still result in a little delay from when each of the slaves receives t
 \newline
 By comparing the methods mentioned, considering how the latency is scaling when adding more tiles to the configuration the choice of method to use for data transfer over the network was the multicast solution. 
 
-\subsubsection{Memory-cache}
-current solution - load all images into ram. what about cache?
+\paragraph{Disk based solution}
+assuming that opening, reading, writing and closing of files for each new state is less efficient than sending them over the network...
 
-\section{Implementation}
+\subsection{Memory-cache}
+current solution - load all images into ram. what about cache?
+map holding sdl surface pointers to images. when map is full, free pointers on new inserts
+pre-fetching of images
+\newpage
+\section{Implementation??}
+The design section explains the most. Not sure what to write here. Do I need this section?
 \section{Tests/Evaluation}
+Do tests!
 \section{Results}
+Present result from tests by hte use of graphs, tables and figures...
+\newpage
 \section{Discussion}
-\subsection{Draw/Blit}
-calculate start position, bounds – only draw images with a position inside the tile's bounds
+\subsection{Unbuffered channel as buffer}
+over 900 loop cycles per second. Too many variable changes - ok to wait for a state to be received before sending another. If it turns out later that the send rate is too low and we want the master to send states more often, then we can change the design to use a buffered channel instead. When using a buffered channel we can set the size of how many items it can contain and the goroutine inserting items into the buffer will only block until the item is written into the channel. 
+
 \subsection{Why SDL?}
-In this project SDL was chosen as the graphical framework as it is easy to use and don't need much time setting up. Alternatives could be OpenGL where the graphical effects would have been better. 
+In this project SDL was chosen as the graphical framework as the author already was familiar with it. Alternatives could be OpenGL where the graphical effects would have been better. 
 
 \subsection{Limitations of the design}
 sdl vs openGl - gliding/smooth movement and smooth zoom
@@ -267,11 +324,17 @@ input method - sdl - could be web socket based
 cache??
 
 \subsection{Single point of failure}
-This system has many "single points of failure". This is partly because of the master - a single node receiving the user input, converting it into a state and forwarding it to all the tiles in the configuration by multicast - but also because of the tiles. If only one of the tiles i the configuration or a tile's projector goes down, there total image viewed will not be complete.  
-
+This system has many "single points of failure". This is partly because of the master - a single node multicasting states changed by the user input - but also because of the tiles. If only one of the tiles i the configuration or a tile's projector goes down, the total image viewed will not be complete. This is possible failures that follows the design of the displaywall, not the viewer and cannot be dealt with creating a new viewer...
+not the master. what about decentralized solution? several masters? election->new master?
+\newpage
 \section{Further works}
-in the future...
+openGL?
 
+cache?
+
+displaycloud?
+
+\newpage
 \section{Conclusion}
 As we can see from the results and evaluation of the implemented design ...
 lessons learned...
