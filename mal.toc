@@ -41,9 +41,10 @@
 \contentsline {paragraph}{Send rate - muticast}{13}
 \contentsline {paragraph}{Blit rate}{13}
 \contentsline {subsection}{\numberline {8.6}Network flow}{14}
-\contentsline {paragraph}{Sequential solution}{14}
-\contentsline {paragraph}{Multicast solution}{15}
-\contentsline {paragraph}{Disk based solution}{15}
+\contentsline {paragraph}{The sequential solution}{14}
+\contentsline {paragraph}{A "clean" sequential solution}{14}
+\contentsline {paragraph}{The Multicast solution}{15}
+\contentsline {paragraph}{A disk based solution}{15}
 \contentsline {subsection}{\numberline {8.7}Memory-cache}{15}
 \contentsline {section}{\numberline {9}Implementation??}{16}
 \contentsline {section}{\numberline {10}Tests/Evaluation}{16}

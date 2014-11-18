@@ -231,7 +231,7 @@ the position variables, the filenames generated is not all valid. The protocol i
 
 \paragraph{The design of the slaves} 
 is concurrent in several ways. First, a slave can blit an image at the same time as it receives a new state from the master. The goroutine receiving states from the master only blocks as long as the gorutine blitting images is not ready to receive the new state.
-Second, the goroutine blitting images is aclually not doing this job alone. Since an image can be blitted at any x position from -256 to 1024 (local position) and any y position from -256 to 768, this makes a maximum of 5 images in width at a time and 4 images in height at a time. Since each image's position is the upper left corner, not the middle of the image the goroutine always start 20 new goroutines. This is one for each of these potential images, so the calculation of the image's position, the fetching of the image and the blitting of each image can happen concurrently. Before updating a tile's sdl surface all images must be blitted and since different goroutines work with it's own image, all from the same state, we have to wait for all goroutines to finish before the update can take place.
+Second, the goroutine blitting images is aclually not doing this job alone. Since an image can be blitted at any x position from -256 to 1024 (local position) and any y position from -256 to 768, this makes a maximum of 5 images in width and 4 images in height at a time. Since each image's position is the upper left corner and not the middle of the image, the goroutine always start 20 new goroutines. This is one for each of these potential images, so the calculation of the image's position, the fetching of the image and the blitting of each image can happen concurrently. Before updating a tile's sdl surface all images must be blitted and since different goroutines work with it's own image, all from the same state, we have to wait for all goroutines to finish before the update can take place.
 
 \subsection{Data flow}
 Whatever kind of input method is chosen, the received input will change the position variables kept at the master. Only when at least one of these variables are changed, they all will be marshalled/packed into a state. Every time a new state is paced it will be inserted into a buffer/queue (FIFO)  where it will be sent out as a multicast to the slaves periodically.
@@ -250,10 +250,10 @@ Amount of blits per second/FPS. Constant FPS/given...
 Flow charts
 
 \subsection{Network flow}
-A big design choice was to choose which method to use when sending data to the slaves. Several methods was considered when making this choice. 
+A big design choice was to choose which method the master should use to communicate with the slaves. Several methods was considered when making this choice. 
 
-\paragraph{Sequential solution}
-The sequential solution is based on the master sending only one request to a chosen slave. Depending on how this solution is implemented, the slave forwards this request to some or all of its neighbours in vertical, horizontal or both directions. By introducing a rule about not blitting or forwarding a state that equals the last received state, a slave receiving two or more of the same request will not contribute to spamming the other slaves with the same request over and over again. To make this solution most effective the master should choose the tile that is closest to the center due to the configuration.
+\paragraph{The sequential solution}
+is based on the master sending only one request to a chosen slave. Depending on how this solution is implemented, the slave forwards this request to some or all of its neighbours in vertical, horizontal or both directions. By introducing a rule about not blitting or forwarding a state that equals the last received state, a slave receiving two or more of the same request will not contribute to spamming the other slaves with the same request over and over again. To make this solution most effective the master should choose the tile that is closest to the center due to the configuration.
 
 The forwarding of requests results in a queue of slaves where the first slave is the one receiving from master and the last one is the one furthest from the center. The slaves between the head and tail of the queue is a collection of the slaves forming the shortest route between these two. 
 This approach is said to be sequential because the last slave in the queue must wait until all the salves before it has received and forwarded the request, one by one, to the next slave in the queue.
@@ -263,18 +263,19 @@ Unfortunately this approach comes with a few problems. Even if the different que
 Another problem is because of the latency this approach causes, the spamming rule we introduced will only work to a certain degree. If a slave S receives requests from more than one neighbour, let's say A and B, then this can be the case:
 S receives the request r1A, followed by r2A and then r1B.
 
-What happens is that the delay causes S to receive two different requests from A before the first request is received by B. Since the last request received before r1B was r2A, S will both blit and forward this request twice. 
+What happens is that the delay causes S to receive two different requests from A before the first request is received by B. Since the last request received before r1B was r2A, S will both blit and forward this request twice. Because of the concurrency, this is not a "clean" sequential solution. 
 
-Because of the concurrency, this is not a "clean" sequential solution. That would be to let the master send one request to one slave and let each slave forward only one request further. This in not even considered as an alternative since the last slave in the queue has to wait for all other slaves in the configuration to forward the request. Forwarding the request as much as 27 times would create a even greater delay before the last slave receives the request.
+\paragraph{A "clean" sequential solution}
+would be to let the master send one request to one slave and let each slave forward only one request further. This was not even considered as an alternative since the last slave in the queue has to wait for all other slaves in the configuration to forward the request. Forwarding the request as much as 27 times would create a even greater delay before the last slave receives the request.
 
-\paragraph{Multicast solution}
-The multicast solution is quite simpler. The master sends the same request to all slaves by looping over the ip addresses and starting goroutines that send the request to each of them. This is technically not a multicast since the sending of requests is done concurrently, but it is a multicast-like solution.
+\paragraph{The Multicast solution}
+is quite simpler. The master sends the same request to all slaves by looping over the ip addresses and starting goroutines sending the request to each of the slaves. This is technically not a multicast since the sending of requests is done concurrently, but it is a multicast-like solution.
 
-This will still result in a little delay from when each of the slaves receives the request, but this delay is so little that other factors will have greater impact on the total delay from a request is sent to a request is blitted on the screen. E.g. network traffic at each of the slaves or latency from fetching an image.
+This will still result in a little delay from the first to the last slave receives the request, but this delay is so little that other factors will have greater impact on the total delay from a request is sent to a request is blitted on the screen. E.g. network traffic at each of the slaves, latency from fetching an image or number of images to fetch.
 
 
-\paragraph{Disk based solution}
-assuming that opening, reading, writing and closing of files for each new state is less efficient than sending them over the network...
+\paragraph{A disk based solution}
+would be to let the master write the state to a file on the shared disk space and let the slaves read it. In order for this to work, the master must have access to the shared disks, meaning the use of laptops as master is not going to work. Still, this is an interesting approach. All the slaves can open the same file at once for reading, but the master is the only one that can open the file for writing. By writing and reading only one state each time the file is opened and closed, this method would probably create a overhead in opening and closing of the file. To reduce this overhead, states can be written and read in bunches for a certain time period. This would mean that the master and the slaves don't have to open and close the file as many times as before. The problem that might occur with this solution is that since the states is bunched before written, there might be a delay from the user enters keyboard input to the changes is displayed on the wall. A side effect of this is that an image moving across the wall would move constantly for each state in the bunch read, then wait to read the next bunch and then move further. The moving of the image might create a start and stop effect that we don't want.
 \newline
 \newline
 By comparing the methods mentioned, considering how the latency is scaling when adding more tiles to the configuration, the choice of method to use for data transfer over the network was the multicast solution. 

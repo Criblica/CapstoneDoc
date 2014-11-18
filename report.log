@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.10.22)  18 NOV 2014 13:27
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.10.22)  18 NOV 2014 13:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**mal.tex
-(./mal.tex
+**report.tex
+(./report.tex
 LaTeX2e <2011/06/27>
 Babel <3.9h> and hyphenation patterns for 4 languages loaded.
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
@@ -252,8 +252,8 @@ File: dt-british.def 2013/09/10
 Package Fancyhdr Warning: \fancyhead's `E' option without twoside option is use
 less on input line 37.
 
-(./mal.aux)
-\openout1 = `mal.aux'.
+No file report.aux.
+\openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 41.
 LaTeX Font Info:    ... okay on input line 41.
@@ -267,7 +267,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 41.
 LaTeX Font Info:    ... okay on input line 41.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 41.
 LaTeX Font Info:    ... okay on input line 41.
- (/usr/share/texlive/texmf-dist/tex/latex/ucs/ucsencs.def
+(/usr/share/texlive/texmf-dist/tex/latex/ucs/ucsencs.def
 File: ucsencs.def 2011/01/21 Fixes to fontencodings LGR, T3
 )
 *geometry* driver: auto-detecting
@@ -314,46 +314,46 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 49.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./mal.toc
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+No file report.toc.
+\tf@toc=\write3
+\openout3 = `report.toc'.
+
 
 Package Fancyhdr Warning: \headheight is too small (12.0pt): 
  Make it at least 27.49998pt.
  We now make it that large for the rest of the document.
  This may cause the page layout to be inconsistent, however.
 
-[2])
-\tf@toc=\write3
-\openout3 = `mal.toc'.
-
- [3] (/usr/share/texlive/texmf-dist/tex/latex/ucs/data/uni-0.def
+[2] (/usr/share/texlive/texmf-dist/tex/latex/ucs/data/uni-0.def
 File: uni-0.def 2013/05/13 UCS: Unicode data U+0000..U+00FF
-) [4]
-[5] [6] [7] (/usr/share/texlive/texmf-dist/tex/latex/ucs/data/uni-32.def
+) [3] [4]
+[5] [6] (/usr/share/texlive/texmf-dist/tex/latex/ucs/data/uni-32.def
 File: uni-32.def 2013/05/13 UCS: Unicode data U+2000..U+20FF
-)
-[8] [9] [10] [11] [12] [13] [14]
+) [7]
+[8] [9] [10] [11] [12] [13]
 Underfull \hbox (badness 10000) in paragraph at lines 278--282
 
  []
 
-[15] [16] [17] [18] [19] [20]
-No file mal.bbl.
-(./mal.aux) ) 
+[14] [15] [16] [17] [18] [19]
+No file report.bbl.
+(./report.aux) ) 
 Here is how much of TeX's memory you used:
- 4617 strings out of 494985
- 58383 string characters out of 6180355
+ 4589 strings out of 494985
+ 58116 string characters out of 6180355
  138972 words of memory out of 5000000
- 7748 multiletter control sequences out of 15000+600000
- 12710 words of font info for 49 fonts, out of 8000000 for 9000
+ 7731 multiletter control sequences out of 15000+600000
+ 8363 words of font info for 32 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
- 35i,11n,43p,1251b,478s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx
-12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-
-Output written on mal.pdf (20 pages, 69346 bytes).
+ 35i,11n,43p,1254b,478s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.p
+fb>
+Output written on report.pdf (19 pages, 67854 bytes).
 PDF statistics:
- 77 PDF objects out of 1000 (max. 8388607)
- 52 compressed objects within 1 object stream
+ 74 PDF objects out of 1000 (max. 8388607)
+ 50 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
