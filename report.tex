@@ -327,6 +327,12 @@ cache??
 \subsection{Single point of failure}
 This system has many "single points of failure". This is partly because of the master - a single node multicasting states changed by the user input - but also because of the tiles. If only one of the tiles i the configuration or a tile's projector goes down, the total image viewed will not be complete. This is possible failures that follows the design of the displaywall, not the viewer and cannot be dealt with creating a new viewer...
 not the master. what about decentralized solution? several masters? election->new master?
+
+\subsection{RMI}
+Master use RMI to invoke blit operations at the slaves?
+
+is there any advantages of RMI?
+
 \newpage
 \section{Further works}
 openGL?
